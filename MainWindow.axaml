@@ -2,8 +2,406 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="800"
+        Width="1400" Height="800"
         x:Class="NitroMonitor.MainWindow"
+        Icon="Resources/logo.png"
+        WindowDecorations="None"
+        ExtendClientAreaToDecorationsHint="True"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        xmlns:sp="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
+        xmlns:vm="clr-namespace:NitroMonitor.ViewModel" x:DataType="vm:NitroMonitorViewModel"
+        xmlns:design="clr-namespace:NitroMonitor.Design"
         Title="NitroMonitor">
-    Welcome to Avalonia!
+
+    <Window.DataContext>
+        <vm:NitroMonitorViewModel />
+    </Window.DataContext>
+
+    <!-- ===================== RECURSOS ===================== -->
+    <Window.Resources>
+        <!-- Paleta -->
+        <SolidColorBrush x:Key="BrushAccent" Color="#C6FEFB" />
+        <SolidColorBrush x:Key="BrushAccentHover" Color="#65D9D0" />
+        <SolidColorBrush x:Key="BrushAccentPressed" Color="#20AFA5" />
+        <SolidColorBrush x:Key="BrushCyan" Color="#75D6D1" />
+        <SolidColorBrush x:Key="BrushViolet" Color="#B45CEE" />
+        <SolidColorBrush x:Key="BrushAmber" Color="#E0B420" />
+        <SolidColorBrush x:Key="BrushPanel" Color="#40061A24" />
+        <SolidColorBrush x:Key="BrushHairline" Color="#7595A0" />
+
+        <FontFamily x:Key="HudFont">avares://NitroMonitor/Resources/BrunoAceSC-Regular.ttf#Bruno Ace SC</FontFamily>
+
+        <!-- Marco definido UNA sola vez: sirve de recorte y de borde -->
+        <StreamGeometry x:Key="FrameGeometry">
+            M 60,5 L 1340,5 Q 1395,5 1395,60 L 1395,740 Q 1395,795 1340,795
+            L 970,795 L 900,730 L 500,730 L 430,795
+            L 60,795 Q 5,795 5,740 L 5,60 Q 5,5 60,5 Z
+        </StreamGeometry>
+        <StreamGeometry x:Key="FrameInnerGeometry">
+            M 90,35 L 1310,35 Q 1365,35 1365,90 L 1365,710 Q 1365,765 1310,765
+            L 985,765 L 915,700 L 485,700 L 415,765
+            L 90,765 Q 35,765 35,710 L 35,90 Q 35,35 90,35 Z
+        </StreamGeometry>
+        <StreamGeometry x:Key="FrameCornersGeometry">
+            M 1310,35 Q 1365,35 1365,90
+            M 1365,710 Q 1365,765 1310,765
+            M 985,765 L 915,700 L 845,700
+            M 555,700 L 485,700 L 415,765
+            M 90,765 Q 35,765 35,710
+            M 35,90 Q 35,35 90,35
+        </StreamGeometry>
+    </Window.Resources>
+
+    <!-- ===================== ESTILOS ===================== -->
+    <Window.Styles>
+        <!-- Tarjeta base -->
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{StaticResource BrushPanel}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BrushAccent}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12" />
+        </Style>
+
+        <!-- Textos -->
+        <Style Selector="TextBlock.statLabel">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="TextBlock.statValue">
+            <Setter Property="FontSize" Value="32" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
+        </Style>
+        <Style Selector="TextBlock.statUnit">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource BrushCyan}" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+            <Setter Property="Margin" Value="6 0 0 5" />
+        </Style>
+        <Style Selector="TextBlock.sectionTitle">
+            <Setter Property="FontFamily" Value="{StaticResource HudFont}" />
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.legend">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
+            <Setter Property="Opacity" Value="0.85" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Ellipse.legendDot">
+            <Setter Property="Width" Value="9" />
+            <Setter Property="Height" Value="9" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!-- Slider vertical estilo HUD -->
+        <Style Selector="Slider.hud /template/ RepeatButton#PART_DecreaseButton">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid Background="Transparent">
+                        <Border Background="{StaticResource BrushAccent}" Width="6"
+                                CornerRadius="3" HorizontalAlignment="Center" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Slider.hud /template/ RepeatButton#PART_IncreaseButton">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid Background="Transparent">
+                        <Border Background="#40C6FEFB" Width="6"
+                                CornerRadius="3" HorizontalAlignment="Center" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Slider.hud /template/ Thumb">
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="12" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{StaticResource BrushCyan}"
+                            BorderBrush="{StaticResource BrushAccent}"
+                            BorderThickness="2"
+                            CornerRadius="2" />
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Slider.hud:pointerover /template/ Thumb">
+            <Setter Property="Background" Value="{StaticResource BrushAccent}" />
+        </Style>
+
+        <!-- Botón cerrar -->
+        <Style Selector="Button.close">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource BrushAccent}" />
+            <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
+            <Setter Property="BorderThickness" Value="3" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Black" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="#FF6B6B" />
+            <Setter Property="Foreground" Value="#FF6B6B" />
+            <Setter Property="Background" Value="#26FF6B6B" />
+        </Style>
+        <Style Selector="Button.close:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="#D84A4A" />
+            <Setter Property="Foreground" Value="#D84A4A" />
+            <Setter Property="Background" Value="#40FF6B6B" />
+        </Style>
+    </Window.Styles>
+
+    <!-- ===================== CONTENIDO ===================== -->
+    <!-- Viewbox: todo se diseña en 1400x800 y escala sin romper el marco -->
+    <Viewbox Stretch="Uniform">
+        <Grid Width="1400" Height="800" Clip="{StaticResource FrameGeometry}">
+
+            <!-- Fondo: un solo degradado radial en lugar de 4 elipses -->
+            <Border IsHitTestVisible="False">
+                <Border.Background>
+                    <RadialGradientBrush Center="50%,40%" RadiusX="75%" RadiusY="90%">
+                        <GradientStop Offset="0" Color="#F02E5A6E" />
+                        <GradientStop Offset="0.55" Color="#F0153B4C" />
+                        <GradientStop Offset="1" Color="#F00A2430" />
+                    </RadialGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <!-- Marco HUD -->
+            <Canvas Width="1400" Height="800" IsHitTestVisible="False">
+                <Path Data="{StaticResource FrameGeometry}" Stroke="{StaticResource BrushAccent}" StrokeThickness="10" />
+                <Path Data="{StaticResource FrameInnerGeometry}" Stroke="{StaticResource BrushHairline}" StrokeThickness="1" />
+                <Path Data="{StaticResource FrameCornersGeometry}" Stroke="{StaticResource BrushAccent}" StrokeThickness="5" />
+            </Canvas>
+
+            <!-- Zona de arrastre -->
+            <Border ZIndex="100" Height="40" VerticalAlignment="Top" Background="Transparent"
+                    PointerPressed="TitleBar_PointerPressed" />
+
+            <!-- Cerrar -->
+            <Button x:Name="btnCerrarVentana" Classes="close" ZIndex="110"
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0 50 62 0" Content="×"
+                    Click="BtnCerrarVentana_OnClick" />
+
+            <!-- Área útil (respeta curvas y la muesca inferior) -->
+            <Grid Margin="70 58 70 95" RowDefinitions="290,*">
+
+                <!-- ============ FILA SUPERIOR ============ -->
+                <Grid Grid.Row="0" ColumnDefinitions="400,*,520">
+
+                    <!-- Ventilador -->
+                    <Grid x:Name="Ventiladores" Grid.Column="0"
+                          ColumnDefinitions="*,76" RowDefinitions="*,Auto">
+
+                        <design:Ventilador Grid.Column="0" Grid.Row="0" Size="240"
+                                           Rpm="{Binding Rpm}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                        <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Horizontal"
+                                    HorizontalAlignment="Center" Spacing="8" Margin="0 6 0 0">
+                            <TextBlock Text="Ventilador:" Foreground="{StaticResource BrushAccent}"
+                                       FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
+                            <ComboBox x:Name="cmbVentilador"
+                                      Theme="{StaticResource ComboBoxGrueso}"
+                                      SelectedValue="{Binding VentiladorSeleccionado}"
+                                      ItemsSource="{Binding CantidadVentiladores}"
+                                      SelectedIndex="0"
+                                      Background="Transparent" BorderBrush="{StaticResource BrushAccent}"
+                                      BorderThickness="3" Foreground="{StaticResource BrushAccent}"
+                                      FontSize="16" FontWeight="Bold">
+                                <ComboBox.Resources>
+                                    <SolidColorBrush x:Key="ComboBoxDropDownGlyphForeground" Color="#C6FEFB" />
+                                    <SolidColorBrush x:Key="ComboBoxDropDownGlyphForegroundFocused" Color="#C6FEFB" />
+                                    <SolidColorBrush x:Key="ComboBoxDropDownGlyphForegroundFocusedPressed" Color="#C6FEFB" />
+                                    <SolidColorBrush x:Key="ComboBoxDropDownGlyphForegroundDisabled" Color="Gray" />
+                                </ComboBox.Resources>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Control de velocidad: valor, slider y Auto agrupados -->
+                        <StackPanel Grid.Column="1" Grid.Row="0" Spacing="8"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Slider, StringFormat={}{0:0}%}"
+                                       Foreground="{StaticResource BrushAccent}"
+                                       FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
+                            <Slider Classes="hud" Orientation="Vertical" Height="190"
+                                    Minimum="0" Maximum="100"
+                                    HorizontalAlignment="Center"
+                                    Value="{Binding Slider}" />
+                        </StackPanel>
+
+                        <design:PerforatedTextBorder Grid.Column="1" Grid.Row="1"
+                            Width="60" Height="32" Margin="0 6 0 0"
+                            HorizontalAlignment="Center"
+                            CornerRadius="10" Text="Auto" FontSize="16"
+                            BorderThickness="3" FontWeight="Bold"
+                            Command="{Binding ToggleAutoButtonCommand}"
+                            IsPerforated="{Binding BtnAuto}"
+                            CommandParameter="Auto">
+                            <design:PerforatedTextBorder.Styles>
+                                <Style Selector="design|PerforatedTextBorder">
+                                    <Setter Property="Foreground" Value="{Binding BtnAutoForeground[0]}" />
+                                    <Setter Property="Background" Value="{Binding BtnAutoBackground[0]}" />
+                                    <Setter Property="BorderBrush" Value="#C6FEFB" />
+                                </Style>
+                                <Style Selector="design|PerforatedTextBorder:pointerover">
+                                    <Setter Property="Foreground" Value="{Binding BtnAutoForeground[1]}" />
+                                    <Setter Property="Background" Value="{Binding BtnAutoBackground[1]}" />
+                                    <Setter Property="BorderBrush" Value="#65D9D0" />
+                                </Style>
+                                <Style Selector="design|PerforatedTextBorder:pressed">
+                                    <Setter Property="Foreground" Value="{Binding BtnAutoForeground[2]}" />
+                                    <Setter Property="Background" Value="{Binding BtnAutoBackground[2]}" />
+                                    <Setter Property="BorderBrush" Value="#20AFA5" />
+                                </Style>
+                            </design:PerforatedTextBorder.Styles>
+                        </design:PerforatedTextBorder>
+                    </Grid>
+
+                    <!-- Logo -->
+                    <StackPanel Grid.Column="1" Spacing="10"
+                                HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border Width="110" Height="110" CornerRadius="15"
+                                BorderBrush="{StaticResource BrushAccent}" BorderThickness="7"
+                                Background="#33C6FEFB">
+                            <TextBlock Text="N" FontFamily="{StaticResource HudFont}" FontSize="64"
+                                       FontWeight="Bold" Foreground="{StaticResource BrushAccent}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="NitroMonitor" FontFamily="{StaticResource HudFont}"
+                                   FontSize="16" Foreground="{StaticResource BrushCyan}"
+                                   HorizontalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Red: descarga / subida / latencia -->
+                    <Grid Grid.Column="2" ColumnDefinitions="*,*" RowDefinitions="*,*"
+                          ColumnSpacing="12" RowSpacing="12"
+                          VerticalAlignment="Center" Height="230">
+
+                        <Border Grid.Row="0" Grid.Column="0" Classes="card">
+                            <Grid ColumnDefinitions="4,*">
+                                <Border Background="{StaticResource BrushCyan}" CornerRadius="2" Margin="0 2 12 2" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Classes="statLabel" Text="Descarga" Foreground="{StaticResource BrushCyan}" />
+                                    <TextBlock Classes="statValue" Text="{Binding DownloadSpeed}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="0" Grid.Column="1" Classes="card">
+                            <Grid ColumnDefinitions="4,*">
+                                <Border Background="{StaticResource BrushViolet}" CornerRadius="2" Margin="0 2 12 2" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Classes="statLabel" Text="Subida" Foreground="{StaticResource BrushViolet}" />
+                                    <TextBlock Classes="statValue" Text="{Binding UploadSpeed}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Classes="card">
+                            <Grid ColumnDefinitions="4,*">
+                                <Border Background="{StaticResource BrushAmber}" CornerRadius="2" Margin="0 2 12 2" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Classes="statLabel" Text="Latencia" Foreground="{StaticResource BrushAmber}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Classes="statValue" Text="{Binding Latency}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+
+                <!-- ============ FILA INFERIOR: GRÁFICAS ============ -->
+                <Grid Grid.Row="1" ColumnDefinitions="*,*,*" Margin="0 12 0 0">
+
+                    <!-- CPU -->
+                    <Border x:Name="CPU" Grid.Column="0" Classes="card" Margin="-15 0 25 0">
+                        <Grid RowDefinitions="Auto,*">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Classes="sectionTitle" Text="CPU" />
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <Ellipse Classes="legendDot" Fill="#FF6F61" />
+                                        <TextBlock Classes="legend" Text="Temperatura" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <Ellipse Classes="legendDot" Fill="#A9E3DE" />
+                                        <TextBlock Classes="legend" Text="Uso" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                            <Grid Grid.Row="1" Margin="0 8 0 0">
+                                <sp:AvaPlot x:Name="CpuGrafica" />
+                                <Canvas IsHitTestVisible="False">
+                                    <Border x:Name="CpuTooltip" Background="#252535" BorderBrush="#888888"
+                                            BorderThickness="1" CornerRadius="5" Padding="10" IsVisible="False">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock x:Name="CpuTextoTiempo" Foreground="White" />
+                                            <TextBlock x:Name="CpuTextoTemperatura" Foreground="#FF5555" FontWeight="Bold" />
+                                            <TextBlock x:Name="CpuTextoUso" Foreground="#5599FF" FontWeight="Bold" />
+                                        </StackPanel>
+                                    </Border>
+                                </Canvas>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- RAM -->
+                    <Border x:Name="RAM" Grid.Column="1" Classes="card" Margin="8 -30 8 15">
+                        <Grid RowDefinitions="Auto,*">
+                            <TextBlock Classes="sectionTitle" Text="RAM" HorizontalAlignment="Left" />
+                            <sp:AvaPlot ZIndex="100" x:Name="RamGrafica" Grid.Row="1" Margin="0 -10 0 0" />
+                        </Grid>
+                    </Border>
+
+                    <!-- GPU -->
+                    <Border x:Name="GPU" Grid.Column="2" Classes="card" Margin="25 0 -15 0">
+                        <Grid RowDefinitions="Auto,*">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Classes="sectionTitle" Text="GPU" />
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <Ellipse Classes="legendDot" Fill="#FFB86C" />
+                                        <TextBlock Classes="legend" Text="Temperatura" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <Ellipse Classes="legendDot" Fill="#9CFF9C" />
+                                        <TextBlock Classes="legend" Text="Uso" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                            <Grid Grid.Row="1" Margin="0 8 0 0">
+                                <sp:AvaPlot x:Name="GpuGrafica" />
+                                <Canvas IsHitTestVisible="False">
+                                    <Border x:Name="GpuTooltip" Background="#252535" BorderBrush="#888888"
+                                            BorderThickness="1" CornerRadius="5" Padding="10" IsVisible="False">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock x:Name="GpuTextoTiempo" Foreground="White" />
+                                            <TextBlock x:Name="GpuTextoTemperatura" Foreground="#FFB86C" FontWeight="Bold" />
+                                            <TextBlock x:Name="GpuTextoUso" Foreground="#9CFF9C" FontWeight="Bold" />
+                                        </StackPanel>
+                                    </Border>
+                                </Canvas>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Viewbox>
 </Window>
