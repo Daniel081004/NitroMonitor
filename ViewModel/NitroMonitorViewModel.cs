@@ -204,11 +204,12 @@ public class NitroMonitorViewModel:INotifyPropertyChanged
         double gpuUso = double.Parse(EjecutarComando("nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits\n"),CultureInfo.InvariantCulture);
         AgregarDatosGpu(gpuTemperatura, gpuUso);
         
-        string x = EjecutarComando("free -h | grep Mem");
+        string x = EjecutarComando("free -b | grep Mem");
         double[] valores = x.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
             .Skip(1)
-            .TakeLast(6).SkipLast(1)
-            .Select(v => double.Parse(v.Replace("Gi", "")))
+            .TakeLast(6)
+            .SkipLast(1)
+            .Select(v => double.Parse(v, CultureInfo.InvariantCulture) / (1024.0 * 1024.0 * 1024.0))
             .ToArray();
         AgregarDatosRam(valores);
     }
