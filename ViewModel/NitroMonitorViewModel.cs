@@ -70,7 +70,7 @@ public class NitroMonitorViewModel:INotifyPropertyChanged
 
     public NitroMonitorViewModel()
     {
-        EjecutarComando("echo Y | sudo tee /sys/module/ec_sys/parameters/write_support\n");
+        EjecutarComando("echo Y | sudo tee /sys/module/ec_sys/parameters/write_support");
         EjecutarComando("sudo nbfc start");
         
         _timer.Elapsed += TimerOnElapsed;
@@ -201,7 +201,7 @@ public class NitroMonitorViewModel:INotifyPropertyChanged
         AgregarDatosCpu(cpuTemperatura, cpuUso);
         
         double gpuTemperatura = double.Parse(EjecutarComando("nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits"), CultureInfo.InvariantCulture);
-        double gpuUso = double.Parse(EjecutarComando("nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits\n"),CultureInfo.InvariantCulture);
+        double gpuUso = double.Parse(EjecutarComando("nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits"),CultureInfo.InvariantCulture);
         AgregarDatosGpu(gpuTemperatura, gpuUso);
         
         string x = EjecutarComando("free -b | grep Mem");
